@@ -260,30 +260,36 @@
             <p>Review your items and proceed to checkout</p>
         </div>
 
-        {% if products %}
         <div class="cart-container">
             <div class="cart-items">
-                {% for product in products %}
-                <div class="cart-item">
-                    <div class="item-image" style="background-image: url('{{ product.image }}')"></div>
-                    <div class="item-details">
-                        <h3>{{ product.name }}</h3>
-                        <p>{{ product.category }} > {{ product.subcategory }}</p>
-                        {% if product.brand %}
-                        <p><strong>Brand:</strong> {{ product.brand }}</p>
-                        {% endif %}
-                        <div class="item-price">₹{{ "{:,}".format(product.price) }}</div>
+                {% if products %}
+                    {% for product in products %}
+                    <div class="cart-item" data-product-id="{{ product.id }}">
+                        <div class="item-image" style="background-image: url('{{ product.image }}');"></div>
+                        <div class="item-details">
+                            <h3>{{ product.name }}</h3>
+                            <p>{{ product.description }}</p>
+                            <div class="item-price">₹{{ product.price }}</div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn decrease">-</button>
+                            <input type="number" class="quantity-input" value="{{ product.qty }}" min="1">
+                            <button class="quantity-btn increase">+</button>
+                        </div>
+                        <div>
+                            <button class="remove-btn">Remove</button>
+                            <button class="move-btn btn btn-outline-secondary btn-sm">Move to Wishlist</button>
+                        </div>
                     </div>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="updateQuantity({{ product.id }}, -1)">-</button>
-                        <input type="number" class="quantity-input" value="1" min="1" onchange="updateQuantity({{ product.id }}, this.value)">
-                        <button class="quantity-btn" onclick="updateQuantity({{ product.id }}, 1)">+</button>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h2>Your cart is empty</h2>
+                        <p>Start shopping and add items to your cart!</p>
+                        <a href="/products" class="btn btn-primary">Shop Now</a>
                     </div>
-                    <button class="remove-btn" onclick="removeFromCart({{ product.id }})">
-                        <i class="fas fa-trash"></i> Remove
-                    </button>
-                </div>
-                {% endfor %}
+                {% endif %}
             </div>
 
             <div class="cart-summary">
@@ -309,31 +315,52 @@
                 </button>
             </div>
         </div>
-        {% else %}
-        <div class="empty-cart">
-            <i class="fas fa-shopping-cart"></i>
-            <h2>Your cart is empty</h2>
-            <p>Looks like you haven't added any items to your cart yet.</p>
-            <a href="/products" class="continue-shopping">
-                <i class="fas fa-shopping-bag"></i> Continue Shopping
-            </a>
-        </div>
-        {% endif %}
     </div>
 
     <script>
-        function updateQuantity(productId, change) {
-            // In a real app, this would update the cart via AJAX
-            console.log('Update quantity for product', productId, 'by', change);
+        function updateCartQuantity(productId, qty) {
+            fetch(`/update_cart_quantity/${productId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `qty=${qty}`
+            }).then(r => r.json()).then(data => {
+                if (!data.success) alert('Could not update quantity');
+                else location.reload();
+            });
         }
 
-        function removeFromCart(productId) {
-            if (confirm('Are you sure you want to remove this item from your cart?')) {
-                // In a real app, this would remove from cart via AJAX
-                console.log('Remove product', productId, 'from cart');
-                location.reload();
-            }
-        }
+        document.querySelectorAll('.cart-item').forEach(function(item) {
+            const productId = item.getAttribute('data-product-id');
+            item.querySelector('.decrease').onclick = function() {
+                let input = item.querySelector('.quantity-input');
+                let qty = Math.max(1, parseInt(input.value) - 1);
+                input.value = qty;
+                updateCartQuantity(productId, qty);
+            };
+            item.querySelector('.increase').onclick = function() {
+                let input = item.querySelector('.quantity-input');
+                let qty = parseInt(input.value) + 1;
+                input.value = qty;
+                updateCartQuantity(productId, qty);
+            };
+            item.querySelector('.quantity-input').onchange = function() {
+                let qty = Math.max(1, parseInt(this.value));
+                this.value = qty;
+                updateCartQuantity(productId, qty);
+            };
+            item.querySelector('.remove-btn').onclick = function() {
+                fetch(`/remove_from_cart/${productId}`, {method: 'POST'}).then(r => r.json()).then(data => {
+                    if (!data.success) alert('Could not remove item');
+                    else location.reload();
+                });
+            };
+            item.querySelector('.move-btn').onclick = function() {
+                fetch(`/move_to_wishlist/${productId}`, {method: 'POST'}).then(r => r.json()).then(data => {
+                    if (!data.success) alert('Could not move item');
+                    else location.reload();
+                });
+            };
+        });
 
         function proceedToCheckout() {
             alert('Checkout functionality would be implemented here!');

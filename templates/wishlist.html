@@ -237,6 +237,49 @@
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">ShopHub</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/products">Products</a></li>
+                <li><a href="/categories">Categories</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <a href="#"><i class="fas fa-search"></i></a>
+                <a href="/wishlist" title="Wishlist">
+                    <i class="fas fa-heart"></i>
+                    {% if session.get('wishlist') %}
+                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('wishlist')|length }}</span>
+                    {% endif %}
+                </a>
+                <a href="/cart" title="Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    {% if session.get('cart') %}
+                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('cart')|length }}</span>
+                    {% endif %}
+                </a>
+                {% if session.get('user_logged_in') %}
+                <div style="position: relative; display: inline-block;">
+                    <a href="#" onclick="toggleUserMenu()" title="Account">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <div id="userMenu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 150px; z-index: 1001;">
+                        <div style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">{{ session.get('user_name', 'User') }}</div>
+                        <a href="/profile" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Profile</a>
+                        <a href="/orders" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Orders</a>
+                        <a href="/logout" style="display: block; padding: 10px; color: #e74c3c; text-decoration: none;">Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" title="Login"><i class="fas fa-sign-in-alt"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="back-nav">
             <a href="/"><i class="fas fa-arrow-left"></i> Back to Shopping</a>
@@ -247,85 +290,56 @@
             <p>Save items for later and never miss a deal</p>
         </div>
 
-        {% if products %}
         <div class="wishlist-grid">
-            {% for product in products %}
-            <div class="wishlist-item">
-                <div class="item-image" style="background-image: url('{{ product.image }}')">
-                    {% if product.badge %}
-                    <span class="item-badge">{{ product.badge }}</span>
-                    {% endif %}
-                    <span class="stock-status {% if not product.in_stock %}out-of-stock{% endif %}">
-                        {% if product.in_stock %}In Stock{% else %}Out of Stock{% endif %}
-                    </span>
-                </div>
-                <div class="item-content">
-                    <div class="item-category">{{ product.category }} > {{ product.subcategory }}</div>
-                    <h3 class="item-title">{{ product.name }}</h3>
-                    {% if product.brand %}
-                    <div class="item-brand"><strong>Brand:</strong> {{ product.brand }}</div>
-                    {% endif %}
-                    <div class="item-price">₹{{ "{:,}".format(product.price) }}</div>
-                    <div class="item-rating">
-                        <div class="stars">
-                            {% for i in range(5) %}
-                                {% if i < product.rating|int %}
-                                    <i class="fas fa-star"></i>
-                                {% elif product.rating - product.rating|int >= 0.5 and i == product.rating|int %}
-                                    <i class="fas fa-star-half-alt"></i>
-                                {% else %}
-                                    <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endfor %}
+            {% if products %}
+                {% for product in products %}
+                <div class="wishlist-item" data-product-id="{{ product.id }}">
+                    <div class="item-image" style="background-image: url('{{ product.image }}');">
+                        {% if product.badge %}<span class="item-badge">{{ product.badge }}</span>{% endif %}
+                        <span class="stock-status {% if not product.in_stock %}out-of-stock{% endif %}">{% if product.in_stock %}In Stock{% else %}Out of Stock{% endif %}</span>
+                    </div>
+                    <div class="item-content">
+                        <div class="item-category">{{ product.category }} > {{ product.subcategory }}</div>
+                        <div class="item-title">{{ product.name }}</div>
+                        {% if product.brand %}<div class="item-brand">Brand: {{ product.brand }}</div>{% endif %}
+                        <div class="item-price">₹{{ product.price }}</div>
+                        <div class="item-actions">
+                            <button class="add-to-cart-btn" {% if not product.in_stock %}disabled{% endif %}>Move to Cart</button>
+                            <button class="remove-btn">Remove</button>
                         </div>
-                        <span class="reviews">({{ product.reviews }} reviews)</span>
-                    </div>
-                    <div class="item-actions">
-                        <button class="add-to-cart-btn" onclick="addToCart({{ product.id }})" {% if not product.in_stock %}disabled{% endif %}>
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                        <button class="remove-btn" onclick="removeFromWishlist({{ product.id }})">
-                            <i class="fas fa-trash"></i>
-                        </button>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-wishlist">
+                    <i class="fas fa-heart"></i>
+                    <h2>Your wishlist is empty</h2>
+                    <p>Save your favorite items and shop later!</p>
+                    <a href="/products" class="btn btn-primary">Browse Products</a>
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="empty-wishlist">
-            <i class="fas fa-heart"></i>
-            <h2>Your wishlist is empty</h2>
-            <p>Start adding items to your wishlist to save them for later.</p>
-            <a href="/products" class="continue-shopping">
-                <i class="fas fa-shopping-bag"></i> Start Shopping
-            </a>
-        </div>
-        {% endif %}
     </div>
 
     <script>
-        function addToCart(productId) {
-            fetch(`/add_to_cart/${productId}`, {method: 'POST'})
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Added to cart!');
-                    }
+    document.querySelectorAll('.wishlist-item').forEach(function(item) {
+        const productId = item.getAttribute('data-product-id');
+        item.querySelector('.remove-btn').onclick = function() {
+            fetch(`/remove_from_wishlist/${productId}`, {method: 'POST'}).then(r => r.json()).then(data => {
+                if (!data.success) alert('Could not remove item');
+                else location.reload();
+            });
+        };
+        const moveBtn = item.querySelector('.add-to-cart-btn');
+        if (moveBtn) {
+            moveBtn.onclick = function() {
+                fetch(`/move_to_cart/${productId}`, {method: 'POST'}).then(r => r.json()).then(data => {
+                    if (!data.success) alert('Could not move item');
+                    else location.reload();
                 });
+            };
         }
-
-        function removeFromWishlist(productId) {
-            if (confirm('Are you sure you want to remove this item from your wishlist?')) {
-                fetch(`/remove_from_wishlist/${productId}`, {method: 'POST'})
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        }
-                    });
-            }
-        }
+    });
     </script>
 </body>
 </html> 

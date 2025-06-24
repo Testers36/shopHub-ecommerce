@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Placed - ShopHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-4 text-center">
+        <h2>Thank You for Your Order!</h2>
+        <div class="alert alert-success">Your order has been placed successfully.</div>
+        <div class="card mx-auto my-4" style="max-width: 500px;">
+            <div class="card-body">
+                <h5 class="card-title">Order #{{ order.id }}</h5>
+                <p class="card-text">Placed on: {{ order.date }}</p>
+                <h6>Shipping Address</h6>
+                <p>{{ order.address.name }}, {{ order.address.line1 }}{% if order.address.line2 %}, {{ order.address.line2 }}{% endif %}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.zip }}<br>Phone: {{ order.address.phone }}</p>
+                <h6>Items</h6>
+                <ul class="list-group mb-3">
+                    {% for item in order.items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ item.name }} x{{ item.qty }}</span>
+                        <span>₹{{ item.price * item.qty }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <h5>Total: ₹{{ order.total }}</h5>
+            </div>
+        </div>
+        <a href="/profile" class="btn btn-primary">Go to My Orders</a>
+        <a href="/products" class="btn btn-outline-secondary">Continue Shopping</a>
+    </div>
+</body>
+</html> 

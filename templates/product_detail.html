@@ -379,9 +379,33 @@
             </ul>
             <div class="nav-icons">
                 <a href="#"><i class="fas fa-search"></i></a>
-                <a href="#"><i class="fas fa-heart"></i></a>
-                <a href="#"><i class="fas fa-shopping-cart"></i></a>
-                <a href="#"><i class="fas fa-user"></i></a>
+                <a href="/wishlist" title="Wishlist">
+                    <i class="fas fa-heart"></i>
+                    {% if session.get('wishlist') %}
+                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('wishlist')|length }}</span>
+                    {% endif %}
+                </a>
+                <a href="/cart" title="Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    {% if session.get('cart') %}
+                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('cart')|length }}</span>
+                    {% endif %}
+                </a>
+                {% if session.get('user_logged_in') %}
+                <div style="position: relative; display: inline-block;">
+                    <a href="#" onclick="toggleUserMenu()" title="Account">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <div id="userMenu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 150px; z-index: 1001;">
+                        <div style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">{{ session.get('user_name', 'User') }}</div>
+                        <a href="/profile" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Profile</a>
+                        <a href="/orders" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Orders</a>
+                        <a href="/logout" style="display: block; padding: 10px; color: #e74c3c; text-decoration: none;">Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" title="Login"><i class="fas fa-sign-in-alt"></i></a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -470,6 +494,72 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="reviews-section" style="margin-bottom: 3rem;">
+                <h2 class="section-title">Customer Reviews</h2>
+                <div style="margin-bottom: 1.5rem;">
+                    {% set avg_rating = (reviews|length > 0) and (reviews|map(attribute='rating')|sum / reviews|length) or 0 %}
+                    <span style="font-size: 1.3rem; color: #f39c12;">
+                        {% for i in range(5) %}
+                            {% if i < avg_rating|int %}<i class="fas fa-star"></i>{% elif avg_rating - avg_rating|int >= 0.5 and i == avg_rating|int %}<i class="fas fa-star-half-alt"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                        {% endfor %}
+                    </span>
+                    <span style="margin-left: 0.5rem; color: #333; font-weight: 500;">{{ '%.1f' % avg_rating }} / 5.0</span>
+                    <span style="color: #666;">({{ reviews|length }} review{{ 's' if reviews|length != 1 else '' }})</span>
+                </div>
+                {% if reviews %}
+                <div class="review-list" style="margin-bottom: 2rem;">
+                    {% for review in reviews %}
+                    <div class="review-item" style="border-bottom: 1px solid #eee; padding: 1rem 0;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: bold; color: #764ba2;">{{ review.user_name }}</span>
+                            <span style="color: #f39c12;">
+                                {% for i in range(5) %}
+                                    {% if i < review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span style="color: #aaa; font-size: 0.9rem;">{{ review.date }}</span>
+                        </div>
+                        <div style="margin-top: 0.5rem; color: #333;">{{ review.text }}</div>
+                        {% if user_review and review.user_email == user_review.user_email %}
+                        <div style="margin-top: 0.5rem;">
+                            <button class="edit-review-btn btn btn-sm btn-outline-primary">Edit</button>
+                            <button class="delete-review-btn btn btn-sm btn-outline-danger">Delete</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: #666;">No reviews yet. Be the first to review this product!</p>
+                {% endif %}
+                {% if session.get('user_logged_in') %}
+                <div class="review-form-container" style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px;">
+                    <h4>{{ user_review and 'Edit Your Review' or 'Write a Review' }}</h4>
+                    <form id="reviewForm">
+                        <div style="margin-bottom: 1rem;">
+                            <label for="reviewRating">Your Rating:</label>
+                            <select id="reviewRating" name="rating" class="form-select" style="width: 120px; display: inline-block; margin-left: 1rem;">
+                                {% for i in range(1,6) %}
+                                <option value="{{ i }}" {% if user_review and user_review.rating == i %}selected{% endif %}>{{ i }} Star{{ 's' if i > 1 else '' }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label for="reviewText">Your Review:</label>
+                            <textarea id="reviewText" name="text" class="form-control" rows="3" required>{{ user_review and user_review.text or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ user_review and 'Update Review' or 'Submit Review' }}</button>
+                        {% if user_review %}
+                        <button type="button" id="deleteReviewBtn" class="btn btn-outline-danger">Delete Review</button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% else %}
+                <p><a href="/login">Login</a> to write a review.</p>
+                {% endif %}
             </div>
 
             <!-- Related Products -->
@@ -573,6 +663,34 @@
         }
         function closeLoginModal() {
             document.getElementById('loginModal').style.display = 'none';
+        }
+
+        // Review form AJAX
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.onsubmit = function(e) {
+                e.preventDefault();
+                const rating = document.getElementById('reviewRating').value;
+                const text = document.getElementById('reviewText').value;
+                fetch(`/product/{{ product.id }}/review`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `rating=${rating}&text=${encodeURIComponent(text)}`
+                }).then(r => r.json()).then(data => {
+                    if (data.success) location.reload();
+                    else alert(data.error || 'Could not submit review');
+                });
+            };
+        }
+        const deleteReviewBtn = document.getElementById('deleteReviewBtn');
+        if (deleteReviewBtn) {
+            deleteReviewBtn.onclick = function() {
+                if (!confirm('Delete your review?')) return;
+                fetch(`/product/{{ product.id }}/review/delete`, {method: 'POST'}).then(r => r.json()).then(data => {
+                    if (data.success) location.reload();
+                    else alert('Could not delete review');
+                });
+            };
         }
     </script>
 </body>

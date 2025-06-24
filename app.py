@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from collections import deque
+from copy import deepcopy
+from uuid import uuid4
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Needed for session
@@ -534,10 +537,38 @@ def add_to_cart(product_id):
     if not session.get('user_logged_in'):
         return jsonify({'login_required': True}), 401
     cart = session.get('cart', [])
-    if product_id not in cart:
-        cart.append(product_id)
+    found = False
+    for item in cart:
+        if item['id'] == product_id:
+            item['qty'] += 1
+            found = True
+            break
+    if not found:
+        cart.append({'id': product_id, 'qty': 1})
     session['cart'] = cart
-    return jsonify({'success': True, 'cart_count': len(cart)})
+    return jsonify({'success': True, 'cart_count': sum(item['qty'] for item in cart)})
+
+@app.route('/remove_from_cart/<int:product_id>', methods=['POST'])
+def remove_from_cart(product_id):
+    if not session.get('user_logged_in'):
+        return jsonify({'login_required': True}), 401
+    cart = session.get('cart', [])
+    cart = [item for item in cart if item['id'] != product_id]
+    session['cart'] = cart
+    return jsonify({'success': True, 'cart_count': sum(item['qty'] for item in cart)})
+
+@app.route('/update_cart_quantity/<int:product_id>', methods=['POST'])
+def update_cart_quantity(product_id):
+    if not session.get('user_logged_in'):
+        return jsonify({'login_required': True}), 401
+    qty = int(request.form.get('qty', 1))
+    cart = session.get('cart', [])
+    for item in cart:
+        if item['id'] == product_id:
+            item['qty'] = max(1, qty)
+            break
+    session['cart'] = cart
+    return jsonify({'success': True, 'cart_count': sum(item['qty'] for item in cart)})
 
 @app.route('/add_to_wishlist/<int:product_id>', methods=['POST'])
 def add_to_wishlist(product_id):
@@ -559,10 +590,50 @@ def remove_from_wishlist(product_id):
     session['wishlist'] = wishlist
     return jsonify({'success': True, 'wishlist_count': len(wishlist)})
 
+@app.route('/move_to_cart/<int:product_id>', methods=['POST'])
+def move_to_cart(product_id):
+    if not session.get('user_logged_in'):
+        return jsonify({'login_required': True}), 401
+    wishlist = session.get('wishlist', [])
+    if product_id in wishlist:
+        wishlist.remove(product_id)
+    session['wishlist'] = wishlist
+    # Add to cart (qty=1 or increment if exists)
+    cart = session.get('cart', [])
+    found = False
+    for item in cart:
+        if item['id'] == product_id:
+            item['qty'] += 1
+            found = True
+            break
+    if not found:
+        cart.append({'id': product_id, 'qty': 1})
+    session['cart'] = cart
+    return jsonify({'success': True, 'cart_count': sum(item['qty'] for item in cart), 'wishlist_count': len(wishlist)})
+
+@app.route('/move_to_wishlist/<int:product_id>', methods=['POST'])
+def move_to_wishlist(product_id):
+    if not session.get('user_logged_in'):
+        return jsonify({'login_required': True}), 401
+    cart = session.get('cart', [])
+    cart = [item for item in cart if item['id'] != product_id]
+    session['cart'] = cart
+    wishlist = session.get('wishlist', [])
+    if product_id not in wishlist:
+        wishlist.append(product_id)
+    session['wishlist'] = wishlist
+    return jsonify({'success': True, 'cart_count': sum(item['qty'] for item in cart), 'wishlist_count': len(wishlist)})
+
 @app.route('/cart')
 def view_cart():
     cart = session.get('cart', [])
-    cart_products = [p for p in products if p['id'] in cart]
+    cart_products = []
+    for item in cart:
+        product = next((p for p in products if p['id'] == item['id']), None)
+        if product:
+            prod_copy = product.copy()
+            prod_copy['qty'] = item['qty']
+            cart_products.append(prod_copy)
     return render_template('cart.html', products=cart_products)
 
 @app.route('/wishlist')
@@ -629,6 +700,278 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route('/profile')
+def profile():
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    user_info = {
+        'name': session.get('user_name', ''),
+        'email': session.get('user_email', ''),
+        'phone': session.get('user_phone', ''),
+    }
+    addresses = session.get('addresses', [])
+    orders = session.get('orders', [])
+    return render_template('profile.html', user=user_info, addresses=addresses, orders=orders)
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        if not all([name, email, phone]):
+            return render_template('edit_profile.html', error='All fields are required', user={
+                'name': name,
+                'email': email,
+                'phone': phone
+            })
+        session['user_name'] = name
+        session['user_email'] = email
+        session['user_phone'] = phone
+        return redirect(url_for('profile'))
+    user_info = {
+        'name': session.get('user_name', ''),
+        'email': session.get('user_email', ''),
+        'phone': session.get('user_phone', ''),
+    }
+    return render_template('edit_profile.html', user=user_info)
+
+@app.route('/addresses')
+def addresses():
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    addresses = session.get('addresses', [])
+    return render_template('addresses.html', addresses=addresses)
+
+@app.route('/add_address', methods=['GET', 'POST'])
+def add_address():
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        address = {
+            'id': len(session.get('addresses', [])) + 1,
+            'name': request.form.get('name'),
+            'line1': request.form.get('line1'),
+            'line2': request.form.get('line2'),
+            'city': request.form.get('city'),
+            'state': request.form.get('state'),
+            'zip': request.form.get('zip'),
+            'phone': request.form.get('phone'),
+        }
+        if not all([address['name'], address['line1'], address['city'], address['state'], address['zip'], address['phone']]):
+            return render_template('add_address.html', error='All required fields must be filled', address=address)
+        addresses = session.get('addresses', [])
+        addresses.append(address)
+        session['addresses'] = addresses
+        return redirect(url_for('profile'))
+    return render_template('add_address.html')
+
+@app.route('/edit_address/<int:address_id>', methods=['GET', 'POST'])
+def edit_address(address_id):
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    addresses = session.get('addresses', [])
+    address = next((a for a in addresses if a['id'] == address_id), None)
+    if not address:
+        return 'Address not found', 404
+    if request.method == 'POST':
+        address['name'] = request.form.get('name')
+        address['line1'] = request.form.get('line1')
+        address['line2'] = request.form.get('line2')
+        address['city'] = request.form.get('city')
+        address['state'] = request.form.get('state')
+        address['zip'] = request.form.get('zip')
+        address['phone'] = request.form.get('phone')
+        if not all([address['name'], address['line1'], address['city'], address['state'], address['zip'], address['phone']]):
+            return render_template('edit_address.html', error='All required fields must be filled', address=address)
+        # Save back
+        for i, a in enumerate(addresses):
+            if a['id'] == address_id:
+                addresses[i] = address
+        session['addresses'] = addresses
+        return redirect(url_for('profile'))
+    return render_template('edit_address.html', address=address)
+
+@app.route('/delete_address/<int:address_id>', methods=['POST'])
+def delete_address(address_id):
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    addresses = session.get('addresses', [])
+    addresses = [a for a in addresses if a['id'] != address_id]
+    session['addresses'] = addresses
+    return redirect(url_for('profile'))
+
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    if not session.get('user_logged_in'):
+        return redirect(url_for('login'))
+    cart = session.get('cart', [])
+    if not cart:
+        return redirect(url_for('cart'))
+    addresses = session.get('addresses', [])
+    selected_address_id = request.form.get('address_id') if request.method == 'POST' else None
+    selected_address = None
+    if selected_address_id:
+        selected_address = next((a for a in addresses if str(a['id']) == str(selected_address_id)), None)
+    if request.method == 'POST':
+        # Add address if needed
+        if request.form.get('add_address'):
+            address = {
+                'id': len(addresses) + 1,
+                'name': request.form.get('name'),
+                'line1': request.form.get('line1'),
+                'line2': request.form.get('line2'),
+                'city': request.form.get('city'),
+                'state': request.form.get('state'),
+                'zip': request.form.get('zip'),
+                'phone': request.form.get('phone'),
+            }
+            if not all([address['name'], address['line1'], address['city'], address['state'], address['zip'], address['phone']]):
+                return render_template('checkout.html', error='All required fields must be filled', addresses=addresses, cart=cart, products=get_cart_products(cart), selected_address=None)
+            addresses.append(address)
+            session['addresses'] = addresses
+            selected_address = address
+        # Place order
+        if selected_address or request.form.get('add_address'):
+            order_id = str(uuid4())[:8]
+            order = {
+                'id': order_id,
+                'date': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                'items': get_cart_products(cart),
+                'total': sum(p['price'] * p['qty'] for p in get_cart_products(cart)),
+                'address': selected_address,
+                'status': 'Confirmed',
+            }
+            orders = session.get('orders', [])
+            orders.append(order)
+            session['orders'] = orders
+            session['cart'] = []  # Clear cart
+            return redirect(url_for('order_success', order_id=order_id))
+    return render_template('checkout.html', addresses=addresses, cart=cart, products=get_cart_products(cart), selected_address=selected_address)
+
+def get_cart_products(cart):
+    cart_products = []
+    for item in cart:
+        product = next((p for p in products if p['id'] == item['id']), None)
+        if product:
+            prod_copy = product.copy()
+            prod_copy['qty'] = item['qty']
+            cart_products.append(prod_copy)
+    return cart_products
+
+@app.route('/order/<order_id>')
+def order_success(order_id):
+    orders = session.get('orders', [])
+    order = next((o for o in orders if o['id'] == order_id), None)
+    if not order:
+        return 'Order not found', 404
+    return render_template('order_success.html', order=order)
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if email == 'admin@example.com' and password == 'admin123':
+            session['admin_logged_in'] = True
+            session['admin_email'] = email
+            return redirect(url_for('admin_dashboard'))
+        else:
+            return render_template('admin_login.html', error='Invalid credentials')
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    session.pop('admin_email', None)
+    return redirect(url_for('admin_login'))
+
+@app.route('/admin')
+def admin_dashboard():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    return render_template('admin_dashboard.html')
+
+@app.route('/admin/products')
+def admin_products():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    search = request.args.get('search', '').strip().lower()
+    filtered_products = products
+    if search:
+        filtered_products = [p for p in products if search in p['name'].lower() or search in p.get('brand', '').lower()]
+    return render_template('admin_products.html', products=filtered_products, search=search)
+
+@app.route('/admin/products/add', methods=['GET', 'POST'])
+def admin_add_product():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    if request.method == 'POST':
+        new_id = max(p['id'] for p in products) + 1 if products else 1
+        product = {
+            'id': new_id,
+            'name': request.form.get('name'),
+            'brand': request.form.get('brand'),
+            'price': int(request.form.get('price', 0)),
+            'category': request.form.get('category'),
+            'subcategory': request.form.get('subcategory'),
+            'sub_subcategory': request.form.get('sub_subcategory'),
+            'image': request.form.get('image'),
+            'description': request.form.get('description'),
+            'specs': {},
+            'rating': float(request.form.get('rating', 0)),
+            'reviews': int(request.form.get('reviews', 0)),
+            'badge': request.form.get('badge'),
+            'in_stock': request.form.get('in_stock') == 'on',
+        }
+        # Parse specs
+        for key in ['RAM', 'Storage', 'Processor', 'Display', 'Battery', 'Camera', 'OS', 'Size', 'Color', 'Material', 'Style', 'Sleeve']:
+            val = request.form.get(key)
+            if val:
+                product['specs'][key] = val
+        products.append(product)
+        return redirect(url_for('admin_products'))
+    return render_template('admin_edit_product.html', product=None, categories=categories)
+
+@app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+def admin_edit_product(product_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    product = next((p for p in products if p['id'] == product_id), None)
+    if not product:
+        return 'Product not found', 404
+    if request.method == 'POST':
+        product['name'] = request.form.get('name')
+        product['brand'] = request.form.get('brand')
+        product['price'] = int(request.form.get('price', 0))
+        product['category'] = request.form.get('category')
+        product['subcategory'] = request.form.get('subcategory')
+        product['sub_subcategory'] = request.form.get('sub_subcategory')
+        product['image'] = request.form.get('image')
+        product['description'] = request.form.get('description')
+        product['rating'] = float(request.form.get('rating', 0))
+        product['reviews'] = int(request.form.get('reviews', 0))
+        product['badge'] = request.form.get('badge')
+        product['in_stock'] = request.form.get('in_stock') == 'on'
+        # Parse specs
+        product['specs'] = {}
+        for key in ['RAM', 'Storage', 'Processor', 'Display', 'Battery', 'Camera', 'OS', 'Size', 'Color', 'Material', 'Style', 'Sleeve']:
+            val = request.form.get(key)
+            if val:
+                product['specs'][key] = val
+        return redirect(url_for('admin_products'))
+    return render_template('admin_edit_product.html', product=product, categories=categories)
+
+@app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
+def admin_delete_product(product_id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    global products
+    products = [p for p in products if p['id'] != product_id]
+    return redirect(url_for('admin_products'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 
