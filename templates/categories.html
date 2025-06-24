@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - ShopHub</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-icons a {
+            color: white;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        /* Categories Grid */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .subcategories-list {
+            padding: 1.5rem;
+        }
+        
+        .subcategory-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .subcategory-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .sub-subcategories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .sub-subcategory-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .sub-subcategory-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Category Icons */
+        .category-icons {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sub-subcategories {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">ShopHub</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/products">Products</a></li>
+                <li><a href="/categories">Categories</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <a href="#"><i class="fas fa-search"></i></a>
+                <a href="#"><i class="fas fa-heart"></i></a>
+                <a href="#"><i class="fas fa-shopping-cart"></i></a>
+                <a href="#"><i class="fas fa-user"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Shop by Categories</h1>
+                <p class="page-subtitle">Explore our comprehensive range of products organized by categories</p>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="categories-grid">
+                <!-- Electronics -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h2 class="category-title">Electronics</h2>
+                        <p class="category-description">Latest gadgets and technology</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Electronics'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Electronics&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Fashion -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <h2 class="category-title">Fashion</h2>
+                        <p class="category-description">Trendy clothing and accessories</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Fashion'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Fashion&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Home & Kitchen -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h2 class="category-title">Home & Kitchen</h2>
+                        <p class="category-description">Everything for your home</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Home & Kitchen'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Home%20%26%20Kitchen&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Grocery -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-shopping-basket"></i>
+                        </div>
+                        <h2 class="category-title">Grocery</h2>
+                        <p class="category-description">Fresh food and daily essentials</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Grocery'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Grocery&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Beauty & Personal Care -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-spa"></i>
+                        </div>
+                        <h2 class="category-title">Beauty & Personal Care</h2>
+                        <p class="category-description">Beauty and wellness products</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Beauty & Personal Care'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Beauty%20%26%20Personal%20Care&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Toys, Baby & Kids -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-baby"></i>
+                        </div>
+                        <h2 class="category-title">Toys, Baby & Kids</h2>
+                        <p class="category-description">Everything for children</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Toys, Baby & Kids'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Toys%2C%20Baby%20%26%20Kids&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Automotive -->
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h2 class="category-title">Automotive</h2>
+                        <p class="category-description">Car and bike accessories</p>
+                    </div>
+                    <div class="subcategories-list">
+                        {% for subcategory, sub_subcategories in categories['Automotive'].items() %}
+                        <div class="subcategory-group">
+                            <h3 class="subcategory-title">{{ subcategory }}</h3>
+                            <div class="sub-subcategories">
+                                {% for sub_subcategory in sub_subcategories %}
+                                <a href="/products?category=Automotive&subcategory={{ subcategory }}&sub_subcategory={{ sub_subcategory }}" class="sub-subcategory-link">
+                                    {{ sub_subcategory }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

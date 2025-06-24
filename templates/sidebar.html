@@ -1,0 +1,141 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h2>Categories</h2>
+    </div>
+    <ul class="sidebar-categories">
+        {% for cat, subcats in categories.items() %}
+        <li class="sidebar-category">
+            <button class="sidebar-category-btn" onclick="toggleSidebarSubcat('{{ cat|replace(' ', '_') }}')">
+                <span>{{ cat }}</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <ul class="sidebar-subcategories" id="sidebar-subcat-{{ cat|replace(' ', '_') }}" style="display: none;">
+                {% for subcat, subsubcats in subcats.items() %}
+                <li class="sidebar-subcategory">
+                    <button class="sidebar-subcategory-btn" onclick="toggleSidebarSubsubcat('{{ cat|replace(' ', '_') }}-{{ subcat|replace(' ', '_') }}')">
+                        <span>{{ subcat }}</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <ul class="sidebar-subsubcategories" id="sidebar-subsubcat-{{ cat|replace(' ', '_') }}-{{ subcat|replace(' ', '_') }}" style="display: none;">
+                        {% for subsubcat in subsubcats %}
+                        <li>
+                            <a href="/products?category={{ cat }}&subcategory={{ subcat }}&sub_subcategory={{ subsubcat }}">{{ subsubcat }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    <style>
+        .sidebar {
+            width: 270px;
+            background: #fff;
+            border-right: 1px solid #e1e8ed;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            overflow-y: auto;
+            padding-top: 80px;
+        }
+        .sidebar-header {
+            padding: 1.5rem 1rem 1rem 1.5rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+            color: #764ba2;
+            margin: 0;
+        }
+        .sidebar-categories {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-category {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .sidebar-category-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-category-btn:hover {
+            background: #f8f9fa;
+        }
+        .sidebar-subcategories {
+            list-style: none;
+            padding-left: 1.5rem;
+            margin: 0;
+        }
+        .sidebar-subcategory-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-subcategory-btn:hover {
+            background: #f0f0f0;
+        }
+        .sidebar-subsubcategories {
+            list-style: none;
+            padding-left: 1.5rem;
+            margin: 0;
+        }
+        .sidebar-subsubcategories li a {
+            display: block;
+            padding: 0.5rem 0.5rem 0.5rem 0;
+            color: #764ba2;
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar-subsubcategories li a:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+    <script>
+        function toggleSidebarSubcat(catId) {
+            var el = document.getElementById('sidebar-subcat-' + catId);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+        function toggleSidebarSubsubcat(subcatId) {
+            var el = document.getElementById('sidebar-subsubcat-' + subcatId);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    </script>
+</aside> 

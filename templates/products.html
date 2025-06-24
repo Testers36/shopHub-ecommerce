@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - ShopHub</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-icons a {
+            color: white;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .filters-row {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        .category-filter {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .category-btn {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .category-btn:hover,
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .clear-filters {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #e74c3c;
+            background: transparent;
+            color: #e74c3c;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .clear-filters:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb {
+            margin-bottom: 2rem;
+            color: #666;
+        }
+        
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: #e74c3c;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .stock-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #27ae60;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.7rem;
+        }
+        
+        .stock-status.out-of-stock {
+            background: #e74c3c;
+        }
+        
+        .product-content {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .product-category {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-subcategory {
+            color: #95a5a6;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+        
+        .product-rating {
+            color: #f39c12;
+            margin-bottom: 1rem;
+        }
+        
+        .product-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .add-to-cart {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            transform: scale(1.05);
+        }
+        
+        .add-to-cart:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .no-results i {
+            font-size: 4rem;
+            color: #bdc3c7;
+            margin-bottom: 1rem;
+        }
+        
+        .no-results h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .no-results p {
+            color: #666;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">ShopHub</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/products">Products</a></li>
+                <li><a href="/categories">Categories</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <a href="#"><i class="fas fa-search"></i></a>
+                <a href="#"><i class="fas fa-heart"></i></a>
+                <a href="#"><i class="fas fa-shopping-cart"></i></a>
+                <a href="#"><i class="fas fa-user"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/">Home</a> > 
+                <a href="/products">Products</a>
+                {% if current_category %} > 
+                    <a href="/products?category={{ current_category }}">{{ current_category }}</a>
+                {% endif %}
+                {% if current_subcategory %} > 
+                    <a href="/products?category={{ current_category }}&subcategory={{ current_subcategory }}">{{ current_subcategory }}</a>
+                {% endif %}
+                {% if current_sub_subcategory %} > 
+                    {{ current_sub_subcategory }}
+                {% endif %}
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Our Products</h1>
+                <p class="page-subtitle">Discover amazing products at unbeatable prices</p>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <form method="GET" action="/products" id="filter-form">
+                    <div class="filters-row">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" placeholder="Search products..." value="{{ search }}">
+                        </div>
+                        <div class="category-filter">
+                            <a href="/products" class="category-btn {% if not current_category %}active{% endif %}">All</a>
+                            {% for category_name in categories.keys() %}
+                            <a href="/products?category={{ category_name }}" class="category-btn {% if current_category == category_name %}active{% endif %}">{{ category_name }}</a>
+                            {% endfor %}
+                        </div>
+                        {% if available_brands %}
+                        <div class="filter-dropdown">
+                            <label for="brand">Brand:</label>
+                            <select name="brand" id="brand" onchange="document.getElementById('filter-form').submit()">
+                                <option value="">All</option>
+                                {% for b in available_brands %}
+                                <option value="{{ b }}" {% if selected_brand == b %}selected{% endif %}>{{ b }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        {% for spec, options in available_specs.items() %}
+                            {% if options|length > 1 %}
+                            <div class="filter-dropdown">
+                                <label for="{{ spec }}">{{ spec }}:</label>
+                                <select name="{{ spec }}" id="{{ spec }}" onchange="document.getElementById('filter-form').submit()">
+                                    <option value="">All</option>
+                                    {% for opt in options %}
+                                    <option value="{{ opt }}" {% if selected_specs[spec] == opt %}selected{% endif %}>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if search or current_category or selected_brand or selected_specs %}
+                        <a href="/products" class="clear-filters">Clear Filters</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Products Grid -->
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <a href="/product/{{ product.id }}">
+                        <div class="product-image" style="background-image: url('{{ product.image }}')">
+                            {% if product.badge %}
+                            <span class="product-badge">{{ product.badge }}</span>
+                            {% endif %}
+                            <span class="stock-status {% if not product.in_stock %}out-of-stock{% endif %}">
+                                {% if product.in_stock %}In Stock{% else %}Out of Stock{% endif %}
+                            </span>
+                        </div>
+                    </a>
+                    <div class="product-content">
+                        <div class="product-category">{{ product.category }}</div>
+                        {% if product.subcategory %}
+                        <div class="product-subcategory">{{ product.subcategory }} > {{ product.sub_subcategory }}</div>
+                        {% endif %}
+                        <h3 class="product-title"><a href="/product/{{ product.id }}">{{ product.name }}</a></h3>
+                        <div class="product-brand"><strong>Brand:</strong> {{ product.brand }}</div>
+                        <div class="product-price">₹{{ "{:,}".format(product.price) }}</div>
+                        <div class="product-rating">
+                            {% for i in range(5) %}
+                                {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                {% elif product.rating - product.rating|int >= 0.5 and i == product.rating|int %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span style="color: #666; margin-left: 5px;">({{ product.reviews }} reviews)</span>
+                        </div>
+                        <p class="product-description">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="add-to-cart" onclick="addToCart({{ product.id }})" {% if not product.in_stock %}disabled{% endif %}>Add to Cart</button>
+                            <button class="wishlist-btn" onclick="addToWishlist({{ product.id }})"><i class="far fa-heart"></i></button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>No products found</h3>
+                <p>Try adjusting your search or filter criteria</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:2rem; border-radius:10px; max-width:350px; margin:auto; text-align:center;">
+            <h2>Login Required</h2>
+            <p>You must be logged in to perform this action.</p>
+            <a href="/login" class="cta-button">Login</a>
+            <p style="margin-top:1rem;">Not registered? <a href="/register">Create an account</a></p>
+            <button onclick="closeLoginModal()" style="margin-top:1rem;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-submit search form when typing
+        document.querySelector('input[name="search"]').addEventListener('input', function() {
+            if (this.value.length >= 3 || this.value.length === 0) {
+                this.form.submit();
+            }
+        });
+        
+        // Prevent form submission on Enter key
+        document.querySelector('input[name="search"]').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.form.submit();
+            }
+        });
+
+        function addToCart(productId) {
+            fetch(`/add_to_cart/${productId}`, {method: 'POST'})
+                .then(res => {
+                    if (res.status === 401) {
+                        showLoginModal();
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        alert('Added to cart!');
+                    }
+                });
+        }
+        function addToWishlist(productId) {
+            fetch(`/add_to_wishlist/${productId}`, {method: 'POST'})
+                .then(res => {
+                    if (res.status === 401) {
+                        showLoginModal();
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        alert('Added to wishlist!');
+                    }
+                });
+        }
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
