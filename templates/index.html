@@ -73,31 +73,53 @@
         }
         
         /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
+        .main-content {
+            flex: 1;
+            margin-left: 270px;
+            transition: margin-left 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .main-content.collapsed {
+            margin-left: 70px;
+        }
+        .hero-carousel {
+            position: relative;
             height: 80vh;
+            margin-top: 70px;
+            overflow: hidden;
+        }
+        .hero-slider {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+        .hero-slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            transition: opacity 0.7s;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             color: white;
-            margin-top: 70px;
+            background-size: cover;
+            background-position: center;
         }
-        
+        .hero-slide.active {
+            opacity: 1;
+            z-index: 1;
+            position: absolute;
+        }
         .hero-content h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        
         .hero-content p {
             font-size: 1.2rem;
             margin-bottom: 2rem;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
-        
         .cta-button {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
             color: white;
@@ -110,10 +132,36 @@
             text-decoration: none;
             display: inline-block;
         }
-        
         .cta-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .hero-carousel-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            z-index: 2;
+            pointer-events: none;
+        }
+        .hero-carousel-btn {
+            background: rgba(0,0,0,0.4);
+            border: none;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            margin: 0 1rem;
+            pointer-events: all;
+            transition: background 0.2s;
+        }
+        .hero-carousel-btn:hover {
+            background: rgba(0,0,0,0.7);
         }
         
         /* Categories Section */
@@ -357,13 +405,35 @@
 
     <div style="display: flex;">
         {% include 'sidebar.html' %}
-        <div style="flex: 1; margin-left: 270px;">
+        <div class="main-content" id="mainContent">
             <!-- Hero Section -->
-            <section class="hero" id="home">
-                <div class="hero-content">
-                    <h1>Discover Amazing Products</h1>
-                    <p>Shop the latest trends with unbeatable prices and fast delivery</p>
-                    <a href="/products" class="cta-button">Shop Now</a>
+            <section class="hero-carousel" id="home">
+                <div class="hero-slider" id="heroSlider">
+                    <div class="hero-slide active" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
+                        <div class="hero-content">
+                            <h1>Discover Amazing Products</h1>
+                            <p>Shop the latest trends with unbeatable prices and fast delivery</p>
+                            <a href="/products" class="cta-button">Shop Now</a>
+                        </div>
+                    </div>
+                    <div class="hero-slide" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1515168833906-d2a3b82b302c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
+                        <div class="hero-content">
+                            <h1>Big Summer Sale!</h1>
+                            <p>Up to 60% off on top brands. Limited time only.</p>
+                            <a href="/products?search=sale" class="cta-button">Shop Sale</a>
+                        </div>
+                    </div>
+                    <div class="hero-slide" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
+                        <div class="hero-content">
+                            <h1>Exclusive Discounts</h1>
+                            <p>Save big on electronics, fashion, and more. Don't miss out!</p>
+                            <a href="/products?search=discount" class="cta-button">View Discounts</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-carousel-controls">
+                    <button class="hero-carousel-btn" id="prevHero"><i class="fas fa-chevron-left"></i></button>
+                    <button class="hero-carousel-btn" id="nextHero"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </section>
 
@@ -549,6 +619,48 @@
             if (!userIcon && menu && menu.style.display === 'block') {
                 menu.style.display = 'none';
             }
+        });
+
+        // Sidebar/main-content sync
+        document.addEventListener('DOMContentLoaded', function() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('mainContent');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    if (sidebar.classList.contains('collapsed')) {
+                        mainContent.classList.add('collapsed');
+                    } else {
+                        mainContent.classList.remove('collapsed');
+                    }
+                });
+            }
+        });
+
+        // Hero carousel logic
+        document.addEventListener('DOMContentLoaded', function() {
+            var slides = document.querySelectorAll('.hero-slide');
+            var current = 0;
+            var prevBtn = document.getElementById('prevHero');
+            var nextBtn = document.getElementById('nextHero');
+            function showSlide(idx) {
+                slides.forEach(function(slide, i) {
+                    slide.classList.toggle('active', i === idx);
+                });
+            }
+            function nextSlide() {
+                current = (current + 1) % slides.length;
+                showSlide(current);
+            }
+            function prevSlide() {
+                current = (current - 1 + slides.length) % slides.length;
+                showSlide(current);
+            }
+            if (nextBtn && prevBtn) {
+                nextBtn.addEventListener('click', nextSlide);
+                prevBtn.addEventListener('click', prevSlide);
+            }
+            setInterval(nextSlide, 6000);
         });
     </script>
 </body>

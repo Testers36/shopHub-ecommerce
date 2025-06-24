@@ -1,13 +1,27 @@
-<aside class="sidebar">
+{% set cat_icons = {
+    'Electronics': 'fa-solid fa-tv',
+    'Fashion': 'fa-solid fa-shirt',
+    'Home & Kitchen': 'fa-solid fa-couch',
+    'Grocery': 'fa-solid fa-apple-whole',
+    'Beauty & Personal Care': 'fa-solid fa-spa',
+    'Toys, Baby & Kids': 'fa-solid fa-baby',
+    'Automotive': 'fa-solid fa-car-side'
+} %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <h2>Categories</h2>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h2 class="sidebar-title">Categories</h2>
     </div>
     <ul class="sidebar-categories">
         {% for cat, subcats in categories.items() %}
         <li class="sidebar-category">
             <button class="sidebar-category-btn" onclick="toggleSidebarSubcat('{{ cat|replace(' ', '_') }}')">
-                <span>{{ cat }}</span>
-                <i class="fas fa-chevron-down"></i>
+                <i class="sidebar-icon {{ cat_icons[cat] }}"></i>
+                <span class="sidebar-cat-text">{{ cat }}</span>
+                <i class="fas fa-chevron-down sidebar-chevron"></i>
             </button>
             <ul class="sidebar-subcategories" id="sidebar-subcat-{{ cat|replace(' ', '_') }}" style="display: none;">
                 {% for subcat, subsubcats in subcats.items() %}
@@ -41,15 +55,35 @@
             z-index: 100;
             overflow-y: auto;
             padding-top: 80px;
+            transition: width 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .sidebar.collapsed {
+            width: 70px;
         }
         .sidebar-header {
+            display: flex;
+            align-items: center;
             padding: 1.5rem 1rem 1rem 1.5rem;
             border-bottom: 1px solid #e1e8ed;
         }
-        .sidebar-header h2 {
+        .sidebar-title {
             font-size: 1.3rem;
             color: #764ba2;
-            margin: 0;
+            margin: 0 0 0 0.7rem;
+            transition: opacity 0.2s;
+        }
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #764ba2;
+            cursor: pointer;
+            margin-right: 0.5rem;
         }
         .sidebar-categories {
             list-style: none;
@@ -69,11 +103,45 @@
             color: #333;
             cursor: pointer;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
+            gap: 1rem;
+            transition: background 0.2s;
         }
         .sidebar-category-btn:hover {
             background: #f8f9fa;
+        }
+        .sidebar-icon {
+            font-size: 1.3rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        .sidebar-cat-text {
+            flex: 1;
+            transition: opacity 0.2s, width 0.2s;
+        }
+        .sidebar.collapsed .sidebar-cat-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+        .sidebar-chevron {
+            margin-left: auto;
+            transition: opacity 0.2s;
+        }
+        .sidebar.collapsed .sidebar-chevron {
+            opacity: 0;
+            width: 0;
+        }
+        .sidebar-subcategories,
+        .sidebar-subcategory-btn,
+        .sidebar-subsubcategories {
+            transition: opacity 0.2s, max-height 0.2s;
+        }
+        .sidebar.collapsed .sidebar-subcategories,
+        .sidebar.collapsed .sidebar-subcategory-btn,
+        .sidebar.collapsed .sidebar-subsubcategories {
+            display: none !important;
         }
         .sidebar-subcategories {
             list-style: none;
@@ -122,6 +190,8 @@
     </style>
     <script>
         function toggleSidebarSubcat(catId) {
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('collapsed')) return; // Don't open subcats when collapsed
             var el = document.getElementById('sidebar-subcat-' + catId);
             if (el.style.display === 'none') {
                 el.style.display = 'block';
@@ -130,6 +200,8 @@
             }
         }
         function toggleSidebarSubsubcat(subcatId) {
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('collapsed')) return;
             var el = document.getElementById('sidebar-subsubcat-' + subcatId);
             if (el.style.display === 'none') {
                 el.style.display = 'block';
@@ -137,5 +209,18 @@
                 el.style.display = 'none';
             }
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            var sidebar = document.getElementById('sidebar');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                // Optionally, close all open subcategories when collapsed
+                if (sidebar.classList.contains('collapsed')) {
+                    document.querySelectorAll('.sidebar-subcategories').forEach(function(el) {
+                        el.style.display = 'none';
+                    });
+                }
+            });
+        });
     </script>
 </aside> 

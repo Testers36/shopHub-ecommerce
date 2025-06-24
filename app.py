@@ -477,10 +477,10 @@ def product_detail(product_id):
         return "Product not found", 404
     
     # Track viewed products in session
-    viewed = session.get('viewed_products', deque(maxlen=10))
+    viewed = deque(session.get('viewed_products', []), maxlen=10)
     if product_id not in viewed:
         viewed.append(product_id)
-    session['viewed_products'] = viewed
+    session['viewed_products'] = list(viewed)
     
     # Get related products from same category
     related_products = [p for p in products if p['category'] == product['category'] and p['id'] != product_id][:3]
