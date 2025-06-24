@@ -367,45 +367,51 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="logo">ShopHub</a>
-            <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/products">Products</a></li>
-                <li><a href="/categories">Categories</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <div class="nav-icons">
-                <a href="#"><i class="fas fa-search"></i></a>
-                <a href="/wishlist" title="Wishlist">
-                    <i class="fas fa-heart"></i>
-                    {% if session.get('wishlist') %}
-                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('wishlist')|length }}</span>
-                    {% endif %}
-                </a>
-                <a href="/cart" title="Cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    {% if session.get('cart') %}
-                    <span style="background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; position: relative; top: -8px; left: -5px;">{{ session.get('cart')|length }}</span>
-                    {% endif %}
-                </a>
-                {% if session.get('user_logged_in') %}
-                <div style="position: relative; display: inline-block;">
-                    <a href="#" onclick="toggleUserMenu()" title="Account">
-                        <i class="fas fa-user"></i>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient sticky-top" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div class="container-fluid nav-container">
+            <a href="/" class="navbar-brand logo">ShopHub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-links">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/products">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/categories">Categories</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+                <div class="d-flex align-items-center nav-icons gap-2">
+                    <a href="#" class="nav-link"><i class="fas fa-search"></i></a>
+                    <a href="/wishlist" class="nav-link position-relative" title="Wishlist">
+                        <i class="fas fa-heart"></i>
+                        {% if session.get('wishlist') %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ session.get('wishlist')|length }}</span>
+                        {% endif %}
                     </a>
-                    <div id="userMenu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 150px; z-index: 1001;">
-                        <div style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">{{ session.get('user_name', 'User') }}</div>
-                        <a href="/profile" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Profile</a>
-                        <a href="/orders" style="display: block; padding: 10px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">Orders</a>
-                        <a href="/logout" style="display: block; padding: 10px; color: #e74c3c; text-decoration: none;">Logout</a>
+                    <a href="/cart" class="nav-link position-relative" title="Cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        {% if session.get('cart') %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ session.get('cart')|length }}</span>
+                        {% endif %}
+                    </a>
+                    {% if session.get('user_logged_in') %}
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+                            <li><span class="dropdown-item-text fw-bold">{{ session.get('user_name', 'User') }}</span></li>
+                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/orders">Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                        </ul>
                     </div>
+                    {% else %}
+                    <a href="/login" class="nav-link" title="Login"><i class="fas fa-sign-in-alt"></i></a>
+                    {% endif %}
                 </div>
-                {% else %}
-                <a href="/login" title="Login"><i class="fas fa-sign-in-alt"></i></a>
-                {% endif %}
             </div>
         </div>
     </nav>
@@ -599,13 +605,28 @@
     </div>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:2rem; border-radius:10px; max-width:350px; margin:auto; text-align:center;">
-            <h2>Login Required</h2>
-            <p>You must be logged in to perform this action.</p>
-            <a href="/login" class="cta-button">Login</a>
-            <p style="margin-top:1rem;">Not registered? <a href="/register">Create an account</a></p>
-            <button onclick="closeLoginModal()" style="margin-top:1rem;">Close</button>
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login Required</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>You must be logged in to perform this action.</p>
+                    <a href="/login" class="btn btn-primary">Login</a>
+                    <p class="mt-3">Not registered? <a href="/register">Create an account</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Toast Container -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <div id="mainToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="mainToastBody">Action completed.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
     </div>
 
@@ -628,6 +649,18 @@
             }
         });
 
+        function showLoginModal() {
+            var modal = new bootstrap.Modal(document.getElementById('loginModal'));
+            modal.show();
+        }
+        function showToast(msg, type='primary') {
+            var toastEl = document.getElementById('mainToast');
+            var toastBody = document.getElementById('mainToastBody');
+            toastBody.textContent = msg;
+            toastEl.className = 'toast align-items-center text-bg-' + type + ' border-0';
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
         function addToCart(productId) {
             fetch(`/add_to_cart/${productId}`, {method: 'POST'})
                 .then(res => {
@@ -639,7 +672,7 @@
                 })
                 .then(data => {
                     if (data && data.success) {
-                        alert('Added to cart!');
+                        showToast('Added to cart!', 'success');
                     }
                 });
         }
@@ -654,15 +687,9 @@
                 })
                 .then(data => {
                     if (data && data.success) {
-                        alert('Added to wishlist!');
+                        showToast('Added to wishlist!', 'success');
                     }
                 });
-        }
-        function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-        function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
         }
 
         // Review form AJAX
@@ -677,7 +704,10 @@
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: `rating=${rating}&text=${encodeURIComponent(text)}`
                 }).then(r => r.json()).then(data => {
-                    if (data.success) location.reload();
+                    if (data.success) {
+                        showToast('Review submitted!', 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    }
                     else alert(data.error || 'Could not submit review');
                 });
             };
@@ -687,11 +717,15 @@
             deleteReviewBtn.onclick = function() {
                 if (!confirm('Delete your review?')) return;
                 fetch(`/product/{{ product.id }}/review/delete`, {method: 'POST'}).then(r => r.json()).then(data => {
-                    if (data.success) location.reload();
+                    if (data.success) {
+                        showToast('Review deleted!', 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    }
                     else alert('Could not delete review');
                 });
             };
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
